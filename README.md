@@ -16,9 +16,11 @@ Visitantes preenchem os dados pelo teclado virtual na tela; os registros são sa
 - Formulário touch com teclado virtual (texto e numérico)
 - Campos:
   - **Nome** (obrigatório)
-  - **Instagram** (opcional)
   - **WhatsApp** (obrigatório)
   - **Data do casamento** — máscara `DD/MM/AA` (opcional)
+  - **Local do casamento** (opcional)
+  - **Nº convidados** (opcional)
+- Layout em 3 linhas: Nome; WhatsApp + Data; Local + Nº Convidados
 - Tela de confirmação com resumo dos dados enviados
 - Logos Raffiner + Ponto Napê
 - QR codes das marcas (Raffiner e [Ponto Napê no Instagram](https://www.instagram.com/ponto.nape/))
@@ -55,7 +57,7 @@ A chave anônima é segura para o frontend **desde que** as políticas RLS estej
 
 No Dashboard do Supabase → **SQL** → **New query**, execute o conteúdo de [`supabase/schema.sql`](supabase/schema.sql).
 
-Isso cria a tabela `leads-feiras-noivas` com RLS permitindo insert para `anon` e `authenticated`.
+O script é **idempotente** (pode rodar de novo sem erro): cria a tabela se necessário, alinha colunas antigas (`instagram` / `empresa` removidas; `local_casamento` / `num_convidados` adicionadas) e recria a política RLS de insert para `anon` e `authenticated`.
 
 #### Colunas
 
@@ -63,12 +65,11 @@ Isso cria a tabela `leads-feiras-noivas` com RLS permitindo insert para `anon` e
 | --- | --- | --- |
 | `id` | `uuid` | gerado automaticamente |
 | `nome` | `text` | sim |
-| `instagram` | `text` | não |
 | `whatsapp` | `text` | sim (somente dígitos) |
 | `data_casamento` | `date` | não (enviada como `YYYY-MM-DD`) |
+| `local_casamento` | `text` | não |
+| `num_convidados` | `integer` | não |
 | `created_at` | `timestamptz` | gerado automaticamente |
-
-Se a tabela já existir com o schema antigo, use os comentários de migração no final de `schema.sql`.
 
 ## Scripts
 
@@ -119,4 +120,4 @@ Publique a pasta `dist/` (Vercel, Netlify, Cloudflare Pages, S3, etc.) e configu
 ## Notas
 
 - A logo do **Ponto Napê** está temporariamente como texto tipográfico; substitua por imagem em `LogoPair.tsx` quando a arte final estiver pronta.
-- WhatsApp e data do casamento ficam na mesma linha para aproveitar melhor o espaço vertical do totem.
+- WhatsApp/Data e Local/Nº Convidados ficam em rows de dois campos para aproveitar o espaço vertical do totem.

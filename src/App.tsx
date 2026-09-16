@@ -45,12 +45,6 @@ function App() {
                   <span>Nome</span>
                   <strong>{submitted.nome}</strong>
                 </li>
-                {submitted.instagram ? (
-                  <li>
-                    <span>Instagram</span>
-                    <strong>@{submitted.instagram}</strong>
-                  </li>
-                ) : null}
                 <li>
                   <span>WhatsApp</span>
                   <strong>{formatWhatsapp(submitted.whatsapp)}</strong>
@@ -59,6 +53,18 @@ function App() {
                   <li>
                     <span>Data do casamento</span>
                     <strong>{submitted.data_casamento}</strong>
+                  </li>
+                ) : null}
+                {submitted.local_casamento ? (
+                  <li>
+                    <span>Local do casamento</span>
+                    <strong>{submitted.local_casamento}</strong>
+                  </li>
+                ) : null}
+                {submitted.num_convidados ? (
+                  <li>
+                    <span>Nº convidados</span>
+                    <strong>{submitted.num_convidados}</strong>
                   </li>
                 ) : null}
               </ul>

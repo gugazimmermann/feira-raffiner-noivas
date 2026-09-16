@@ -1,26 +1,33 @@
 -- Rode no SQL Editor do Supabase (Dashboard → SQL → New query)
+-- Script idempotente: pode rodar de novo sem erro.
 
 create table if not exists public."leads-feiras-noivas" (
   id uuid primary key default gen_random_uuid(),
   nome text not null,
-  instagram text,
   whatsapp text not null,
   data_casamento date,
+  local_casamento text,
+  num_convidados integer,
   created_at timestamptz not null default now()
 );
 
+-- Se a tabela já existia com schema antigo, alinha as colunas:
+alter table public."leads-feiras-noivas"
+  add column if not exists data_casamento date;
+alter table public."leads-feiras-noivas"
+  add column if not exists local_casamento text;
+alter table public."leads-feiras-noivas"
+  add column if not exists num_convidados integer;
+alter table public."leads-feiras-noivas" drop column if exists instagram;
+alter table public."leads-feiras-noivas" drop column if exists empresa;
+
 alter table public."leads-feiras-noivas" enable row level security;
+
+drop policy if exists "Anon e autenticados podem inserir leads"
+  on public."leads-feiras-noivas";
 
 create policy "Anon e autenticados podem inserir leads"
   on public."leads-feiras-noivas"
   for insert
   to anon, authenticated
   with check (true);
-
--- Migração: se a tabela já existir, rode também:
--- alter table public."leads-feiras-noivas"
---   add column if not exists data_casamento date;
--- alter table public."leads-feiras-noivas" alter column instagram drop not null;
--- alter table public."leads-feiras-noivas" alter column data_casamento drop not null;
--- alter table public."leads-feiras-noivas" alter column whatsapp set not null;
--- alter table public."leads-feiras-noivas" drop column if exists empresa;

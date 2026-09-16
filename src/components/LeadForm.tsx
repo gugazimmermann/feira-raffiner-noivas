@@ -7,9 +7,10 @@ import {
 
 export type LeadData = {
   nome: string
-  instagram: string
   whatsapp: string
   data_casamento: string
+  local_casamento: string
+  num_convidados: string
 }
 
 type FieldErrors = Partial<Record<keyof LeadData, string>>
@@ -17,8 +18,6 @@ type FieldErrors = Partial<Record<keyof LeadData, string>>
 type LeadFormProps = {
   onSuccess: (data: LeadData) => void
 }
-
-const INSTAGRAM_HANDLE = /^[a-zA-Z0-9._]{1,30}$/
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, '')
@@ -56,6 +55,10 @@ export function formatDataCasamento(value: string) {
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
 }
 
+function formatNumConvidados(value: string) {
+  return onlyDigits(value).slice(0, 4)
+}
+
 function parseDataCasamento(value: string): Date | null {
   const digits = onlyDigits(value)
   if (digits.length !== 6) return null
@@ -85,20 +88,11 @@ function toIsoDate(date: Date) {
   return `${year}-${month}-${day}`
 }
 
-function normalizeInstagram(value: string) {
-  return value.replace(/^@+/, '').slice(0, 30)
-}
-
 function validate(data: LeadData): FieldErrors {
   const errors: FieldErrors = {}
 
   if (data.nome.trim().length < 2) {
     errors.nome = 'Informe seu nome completo.'
-  }
-
-  const handle = data.instagram.trim()
-  if (handle && !INSTAGRAM_HANDLE.test(handle)) {
-    errors.instagram = 'Informe um Instagram válido.'
   }
 
   const digits = onlyDigits(data.whatsapp)
@@ -122,19 +116,32 @@ function validate(data: LeadData): FieldErrors {
     }
   }
 
+  const guests = onlyDigits(data.num_convidados)
+  if (guests.length > 0) {
+    const count = Number(guests)
+    if (!Number.isInteger(count) || count < 1) {
+      errors.num_convidados = 'Informe um número válido de convidados.'
+    }
+  }
+
   return errors
 }
 
 function keyboardModeFor(field: keyof LeadData): VirtualKeyboardMode {
-  return field === 'whatsapp' || field === 'data_casamento' ? 'numeric' : 'text'
+  return field === 'whatsapp' ||
+    field === 'data_casamento' ||
+    field === 'num_convidados'
+    ? 'numeric'
+    : 'text'
 }
 
 export function LeadForm({ onSuccess }: LeadFormProps) {
   const [form, setForm] = useState<LeadData>({
     nome: '',
-    instagram: '',
     whatsapp: '',
     data_casamento: '',
+    local_casamento: '',
+    num_convidados: '',
   })
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -172,7 +179,7 @@ export function LeadForm({ onSuccess }: LeadFormProps) {
   function formatFieldValue(field: keyof LeadData, nextRaw: string) {
     if (field === 'whatsapp') return formatWhatsapp(nextRaw)
     if (field === 'data_casamento') return formatDataCasamento(nextRaw)
-    if (field === 'instagram') return normalizeInstagram(nextRaw)
+    if (field === 'num_convidados') return formatNumConvidados(nextRaw)
     return nextRaw
   }
 
@@ -200,6 +207,11 @@ export function LeadForm({ onSuccess }: LeadFormProps) {
       if (field === 'data_casamento') {
         const digits = onlyDigits(current.data_casamento).slice(0, -1)
         return { ...current, data_casamento: formatDataCasamento(digits) }
+      }
+
+      if (field === 'num_convidados') {
+        const digits = onlyDigits(current.num_convidados).slice(0, -1)
+        return { ...current, num_convidados: formatNumConvidados(digits) }
       }
 
       return {
@@ -230,21 +242,24 @@ export function LeadForm({ onSuccess }: LeadFormProps) {
     }
 
     const weddingDate = parseDataCasamento(form.data_casamento)
+    const guestsDigits = onlyDigits(form.num_convidados)
 
     const displayData: LeadData = {
       nome: form.nome.trim(),
-      instagram: form.instagram.trim(),
       whatsapp: onlyDigits(form.whatsapp),
       data_casamento: weddingDate
         ? formatDataCasamento(form.data_casamento)
         : '',
+      local_casamento: form.local_casamento.trim(),
+      num_convidados: guestsDigits,
     }
 
     const insertPayload = {
       nome: displayData.nome,
-      instagram: displayData.instagram || null,
       whatsapp: displayData.whatsapp,
       data_casamento: weddingDate ? toIsoDate(weddingDate) : null,
+      local_casamento: displayData.local_casamento || null,
+      num_convidados: guestsDigits ? Number(guestsDigits) : null,
     }
 
     setSubmitting(true)
@@ -288,48 +303,6 @@ export function LeadForm({ onSuccess }: LeadFormProps) {
           {errors.nome ? (
             <p id="nome-error" className="field__error" role="alert">
               {errors.nome}
-            </p>
-          ) : null}
-        </div>
-
-        <div
-          className={
-            activeField === 'instagram' ? 'field field--active' : 'field'
-          }
-          onPointerDown={() => openKeyboard('instagram')}
-        >
-          <label htmlFor="instagram">Instagram</label>
-          <div
-            className={
-              errors.instagram
-                ? 'field__control field__control--prefix field__control--invalid'
-                : 'field__control field__control--prefix'
-            }
-          >
-            <span className="field__prefix" aria-hidden="true">
-              @
-            </span>
-            <input
-              id="instagram"
-              name="instagram"
-              type="text"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              placeholder="seu_usuario"
-              value={form.instagram}
-              readOnly
-              inputMode="none"
-              tabIndex={0}
-              aria-invalid={Boolean(errors.instagram)}
-              aria-describedby={
-                errors.instagram ? 'instagram-error' : undefined
-              }
-            />
-          </div>
-          {errors.instagram ? (
-            <p id="instagram-error" className="field__error" role="alert">
-              {errors.instagram}
             </p>
           ) : null}
         </div>
@@ -391,6 +364,76 @@ export function LeadForm({ onSuccess }: LeadFormProps) {
                 role="alert"
               >
                 {errors.data_casamento}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="field-row">
+          <div
+            className={
+              activeField === 'local_casamento'
+                ? 'field field--active'
+                : 'field'
+            }
+            onPointerDown={() => openKeyboard('local_casamento')}
+          >
+            <label htmlFor="local_casamento">Local do casamento</label>
+            <input
+              id="local_casamento"
+              name="local_casamento"
+              type="text"
+              inputMode="none"
+              placeholder="Cidade ou espaço"
+              value={form.local_casamento}
+              readOnly
+              tabIndex={0}
+              aria-invalid={Boolean(errors.local_casamento)}
+              aria-describedby={
+                errors.local_casamento ? 'local-casamento-error' : undefined
+              }
+            />
+            {errors.local_casamento ? (
+              <p
+                id="local-casamento-error"
+                className="field__error"
+                role="alert"
+              >
+                {errors.local_casamento}
+              </p>
+            ) : null}
+          </div>
+
+          <div
+            className={
+              activeField === 'num_convidados'
+                ? 'field field--active'
+                : 'field'
+            }
+            onPointerDown={() => openKeyboard('num_convidados')}
+          >
+            <label htmlFor="num_convidados">Nº convidados</label>
+            <input
+              id="num_convidados"
+              name="num_convidados"
+              type="text"
+              inputMode="none"
+              placeholder="Ex.: 150"
+              value={form.num_convidados}
+              readOnly
+              tabIndex={0}
+              aria-invalid={Boolean(errors.num_convidados)}
+              aria-describedby={
+                errors.num_convidados ? 'num-convidados-error' : undefined
+              }
+            />
+            {errors.num_convidados ? (
+              <p
+                id="num-convidados-error"
+                className="field__error"
+                role="alert"
+              >
+                {errors.num_convidados}
               </p>
             ) : null}
           </div>
