@@ -10,9 +10,11 @@ export function LogoPair() {
       </div>
       <span className="logo-pair__divider" aria-hidden="true" />
       <div className="logo-pair__slot">
-        <span className="logo-pair__wordmark" aria-label="Ponto Napê">
-          Ponto Napê
-        </span>
+        <img
+          className="logo-pair__logo"
+          src="/ponto-nape.png"
+          alt="Ponto Napê"
+        />
       </div>
     </div>
   )

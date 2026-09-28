@@ -94,6 +94,8 @@ src/
     supabase.ts              # client Supabase
 public/
   raffiner2.png
+  ponto-nape.png              # logo recortada (mesma proporção da Raffiner)
+  ponto_nape.jpg              # arte original
   qr-raffiner.svg
   qr-ponto-nape.svg
 supabase/
@@ -119,5 +121,5 @@ Publique a pasta `dist/` (Vercel, Netlify, Cloudflare Pages, S3, etc.) e configu
 
 ## Notas
 
-- A logo do **Ponto Napê** está temporariamente como texto tipográfico; substitua por imagem em `LogoPair.tsx` quando a arte final estiver pronta.
+- A logo do **Ponto Napê** (`public/ponto-nape.png`) foi recortada a partir de `ponto_nape.jpg` na mesma proporção da Raffiner (`1778×335`) e entra em `LogoPair.tsx` junto com `raffiner2.png`.
 - WhatsApp/Data e Local/Nº Convidados ficam em rows de dois campos para aproveitar o espaço vertical do totem.
