@@ -30,4 +30,9 @@ create policy "Anon e autenticados podem inserir leads"
   on public."leads-feiras-noivas"
   for insert
   to anon, authenticated
-  with check (true);
+  with check (
+    char_length(btrim(nome)) between 2 and 120
+    and whatsapp ~ '^[0-9]{2}9[0-9]{8}$'
+    and (local_casamento is null or char_length(local_casamento) <= 200)
+    and (num_convidados is null or num_convidados between 1 and 9999)
+  );
